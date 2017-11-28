@@ -25,18 +25,25 @@ x_ar_size = x_train.shape[1]# gets the size of the dataset per iteration
 print(x_train.shape[0])
 num_train_iterations = round(x_train.shape[0], -1)# takes the number of training iterations and rounds to nearest 10 for the training step size
 
+
+hidden_neurons = 100
+y_ar_size = 1
+learning_rate = 0.05
+
 # from the MNIST tutorial
 x = tf.placeholder(tf.float32, [None, x_ar_size])
-W = tf.Variable(tf.zeros([x_ar_size, 10]))
-b = tf.Variable(tf.zeros([10]))
-y = tf.matmul(x, W) + b
-y_ = tf.placeholder(tf.float32, [None, 10])
+W1 = tf.Variable(tf.zeros([x_ar_size, hidden_neurons]))
+b1 = tf.Variable(tf.zeros([hidden_neurons]))
+W2 = tf.Variable(tf.zeros([hidden_neurons, y_ar_size]))
+b2 = tf.Variable(tf.zeros([y_ar_size]))
 
-cross_entropy = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=y_, logits=y))
-train_step = tf.train.GradientDescentOptimizer(0.05).minimize(cross_entropy)
 
-correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(y_, 1))
-accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+y = tf.matmul(tf.nn.relu(tf.matmul(x, W1) + b1),W2) + b2
+y_ = tf.placeholder(tf.float32, [None, y_ar_size])
+
+cost_function = tf.reduce_mean((y - y_) * (y - y_))
+
+train_step = tf.train.adams(learning_rate).minimize(cost_function)
 
 # functions to take batches from the training data
 def x_train_batch(int_in, num_train_iterations):
